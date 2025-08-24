@@ -6,7 +6,7 @@
 /*   By: imamasol <imamasol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/15 15:45:45 by imamasol          #+#    #+#             */
-/*   Updated: 2025/08/24 15:07:36 by imamasol         ###   ########.fr       */
+/*   Updated: 2025/08/24 18:16:32 by imamasol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,31 +65,58 @@ static char	*ft_newline(char **stash, const char *srch)
 	return (line);
 }
 
+static int	ft_readbuf(int fd, char **stash)
+{
+	int		ret;
+	ssize_t	byte;
+	char	*buffer;
+
+	buffer = malloc(BUFFER_SIZE + 1);
+	if (!buffer)
+		return (-1);
+	byte = read(fd, buffer, BUFFER_SIZE);
+	ret = 1;
+	if (byte < 0)
+		ret = -1;
+	else if (byte == 0)
+		ret = 0;
+	else
+	{
+		buffer[byte] = '\0';
+		if (ft_strchr(buffer, '\n'))
+			ret = 2;
+		if (!ft_append(stash, buffer))
+			ret = -1;
+	}
+	free(buffer);
+	return (ret);
+}
+
 char	*get_next_line(int fd)
 {
-	ssize_t		byte;
+	int			index;
 	char		*srch;
 	static char	*stash;
-	char		buffer[BUFFER_SIZE + 1];
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
+	if (stash)
+	{
+		srch = ft_strchr(stash, '\n');
+		if (srch)
+			return (ft_newline(&stash, srch));
+	}
 	while (1)
 	{
-		if (stash)
+		index = ft_readbuf(fd, &stash);
+		if (index < 0)
+			return (ft_freestash(&stash));
+		if (index == 0)
+			return (ft_zerobyte(&stash));
+		if (index == 2)
 		{
 			srch = ft_strchr(stash, '\n');
-			if (srch)
-				return (ft_newline(&stash, srch));
+			return (ft_newline(&stash, srch));
 		}
-		byte = read(fd, buffer, BUFFER_SIZE);
-		if (byte < 0)
-			return (ft_freestash(&stash));
-		if (byte == 0)
-			return (ft_zerobyte(&stash));
-		buffer[byte] = '\0';
-		stash = ft_append(&stash, buffer);
-		if (!stash)
-			return (NULL);
 	}
 }

@@ -6,7 +6,7 @@
 /*   By: imamasol <imamasol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 15:05:12 by imamasol          #+#    #+#             */
-/*   Updated: 2025/08/24 15:07:40 by imamasol         ###   ########.fr       */
+/*   Updated: 2025/08/24 17:06:23 by imamasol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,30 +61,31 @@ void	*ft_memcpy(void *dest, const void *src, size_t n)
 	return (dest);
 }
 
-char	*ft_append(char **stash, const char *buf)
+int	ft_append(char **stash, const char *buffer)
 {
-	char	*tmp;
-	size_t	len_buf;
 	size_t	len_stash;
+	size_t	len_buf;
+	char	*tmp;
 
 	if (!*stash)
 		len_stash = 0;
 	else
 		len_stash = ft_strlen(*stash);
-	if (!buf)
-		return (*stash);
-	len_buf = ft_strlen(buf);
+	if (!buffer)
+		return (1);
+	len_buf = ft_strlen(buffer);
 	if (len_buf == 0)
-		return (*stash);
-	if (len_stash > SIZE_MAX - (len_buf + 1))
-		return (ft_freestash(stash));
+		return (1);
+	if (len_stash > SIZE_MAX - len_buf - 1)
+		return (ft_freestash(stash), 0);
 	tmp = malloc(len_stash + len_buf + 1);
 	if (!tmp)
-		return (ft_freestash(stash));
+		return (ft_freestash(stash), 0);
 	if (len_stash)
 		ft_memcpy(tmp, *stash, len_stash);
-	ft_memcpy(tmp + len_stash, buf, len_buf);
+	ft_memcpy(tmp + len_stash, buffer, len_buf);
 	tmp[len_stash + len_buf] = '\0';
 	free(*stash);
-	return (tmp);
+	*stash = tmp;
+	return (1);
 }
