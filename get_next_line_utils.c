@@ -5,12 +5,19 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: imamasol <imamasol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/29 15:05:12 by imamasol          #+#    #+#             */
-/*   Updated: 2025/08/23 16:18:10 by imamasol         ###   ########.fr       */
+/*   Created: 2025/06/16 15:05:12 by imamasol          #+#    #+#             */
+/*   Updated: 2025/08/24 15:07:40 by imamasol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
+
+char	*ft_freestash(char **stash)
+{
+	free(*stash);
+	*stash = NULL;
+	return (NULL);
+}
 
 size_t	ft_strlen(const char *c)
 {
@@ -54,36 +61,30 @@ void	*ft_memcpy(void *dest, const void *src, size_t n)
 	return (dest);
 }
 
-char	*ft_append(char *stash, const char *buf)
+char	*ft_append(char **stash, const char *buf)
 {
 	char	*tmp;
 	size_t	len_buf;
 	size_t	len_stash;
 
-	if (!stash)
+	if (!*stash)
 		len_stash = 0;
 	else
-		len_stash = ft_strlen(stash);
+		len_stash = ft_strlen(*stash);
 	if (!buf)
-		return (stash);
+		return (*stash);
 	len_buf = ft_strlen(buf);
 	if (len_buf == 0)
-		return (stash);
+		return (*stash);
 	if (len_stash > SIZE_MAX - (len_buf + 1))
-		return (ft_free(stash));
+		return (ft_freestash(stash));
 	tmp = malloc(len_stash + len_buf + 1);
 	if (!tmp)
-		return (ft_free(stash));
+		return (ft_freestash(stash));
 	if (len_stash)
-		ft_memcpy(tmp, stash, len_stash);
+		ft_memcpy(tmp, *stash, len_stash);
 	ft_memcpy(tmp + len_stash, buf, len_buf);
 	tmp[len_stash + len_buf] = '\0';
-	free(stash);
+	free(*stash);
 	return (tmp);
-}
-
-char	*ft_free(char *str)
-{
-	free(str);
-	return (NULL);
 }

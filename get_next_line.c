@@ -5,19 +5,12 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: imamasol <imamasol@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/15 15:45:45 by imamasol          #+#    #+#             */
-/*   Updated: 2025/08/23 19:53:09 by imamasol         ###   ########.fr       */
+/*   Created: 2025/06/15 15:45:45 by imamasol          #+#    #+#             */
+/*   Updated: 2025/08/24 15:07:36 by imamasol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
-static char	*ft_freestash(char **stash)
-{
-	free(*stash);
-	*stash = NULL;
-	return (NULL);
-}
 
 static char	*ft_zerobyte(char **stash)
 {
@@ -32,31 +25,43 @@ static char	*ft_zerobyte(char **stash)
 	return (NULL);
 }
 
+static int	ft_leftover(char **stash, const char *start, size_t restlen)
+{
+	char	*leftover;
+
+	leftover = malloc(restlen + 1);
+	if (!leftover)
+		return (0);
+	ft_memcpy(leftover, start, restlen);
+	leftover[restlen] = '\0';
+	free(*stash);
+	*stash = leftover;
+	return (1);
+}
+
 static char	*ft_newline(char **stash, const char *srch)
 {
 	char	*line;
-	char	*leftover;
 	size_t	linelen;
 	size_t	restlen;
 
-	linelen = (srch - *stash) + 1;
+	linelen = (size_t)(srch - *stash) + 1;
 	line = malloc(linelen + 1);
 	if (!line)
 		return (ft_freestash(stash));
 	ft_memcpy(line, *stash, linelen);
 	line[linelen] = '\0';
 	restlen = ft_strlen(*stash) - linelen;
-	leftover = malloc(restlen + 1);
-	if (!leftover)
+	if (restlen == 0)
+	{
+		ft_freestash(stash);
+		return (line);
+	}
+	if (!ft_leftover(stash, srch + 1, restlen))
 	{
 		free(line);
 		return (ft_freestash(stash));
 	}
-	if (restlen)
-		ft_memcpy(leftover, srch + 1, restlen);
-	leftover[restlen] = '\0';
-	free(*stash);
-	*stash = leftover;
 	return (line);
 }
 
@@ -79,11 +84,11 @@ char	*get_next_line(int fd)
 		}
 		byte = read(fd, buffer, BUFFER_SIZE);
 		if (byte < 0)
-			return (ft_free(stash));
+			return (ft_freestash(&stash));
 		if (byte == 0)
 			return (ft_zerobyte(&stash));
 		buffer[byte] = '\0';
-		stash = ft_append(stash, buffer);
+		stash = ft_append(&stash, buffer);
 		if (!stash)
 			return (NULL);
 	}
